@@ -4,7 +4,7 @@ import { roleGuard } from './core/guards/role.guard';
 import { Role } from './shared/models/enums';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'matricula', pathMatch: 'full' },
   {
     path: 'matricula',
     loadComponent: () =>
