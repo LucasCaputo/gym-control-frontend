@@ -20,6 +20,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'matricula/erro',
+    loadComponent: () =>
+      import('./features/public/registration/registration-error.component').then(
+        (m) => m.RegistrationErrorComponent,
+      ),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
