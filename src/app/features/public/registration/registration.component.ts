@@ -320,6 +320,12 @@ export class RegistrationComponent {
         this.loading.set(false);
         if (err.status === 409) {
           this.cpfConflict.set(true);
+        } else {
+          this.snackBar.open(
+            'Não foi possível concluir a matrícula. Tente novamente.',
+            'Fechar',
+            { duration: 8000 }
+          );
         }
       },
     });
