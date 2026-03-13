@@ -13,11 +13,18 @@ export class CheckinService {
   searchStudents(q: string): Observable<StudentSearchResult[]> {
     const params = new HttpParams().set('q', q);
     return this.http
-      .get<ApiResponse<{ data: StudentSearchResult[] }>>(
+      .get<ApiResponse<{ data: Record<string, unknown>[] }>>(
         `${environment.apiBaseUrl}/students/search`,
         { params },
       )
-      .pipe(map((res) => res.data?.data ?? []));
+      .pipe(
+        map((res) =>
+          (res.data?.data ?? []).map((s) => ({
+            id: (s['id'] ?? s['_id']) as string,
+            name: s['name'] as string,
+          })),
+        ),
+      );
   }
 
   create(studentId: string): Observable<Checkin> {
