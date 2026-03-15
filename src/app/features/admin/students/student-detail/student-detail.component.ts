@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import { switchMap, of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -141,11 +142,6 @@ import { StudentEditDialogComponent } from '../student-edit-dialog/student-edit-
             @if (showUpdateCard()) {
               <button mat-stroked-button (click)="updateCard()">
                 <mat-icon>payment</mat-icon> Atualizar Cartão
-              </button>
-            }
-            @if (showCancelSubscription()) {
-              <button mat-stroked-button color="warn" (click)="cancelSubscription()">
-                <mat-icon>credit_card_off</mat-icon> Cancelar Assinatura
               </button>
             }
           }
@@ -400,8 +396,22 @@ export class StudentDetailComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
-      if (confirmed) {
-        this.studentService.update(this.studentId, { active: !student.active }).subscribe({
+      if (!confirmed) return;
+
+      const shouldCancelSubscription =
+        action === 'inativar' &&
+        student.planType !== 'SCHOLARSHIP' &&
+        !!student.asaasSubscriptionId;
+
+      const cancelOrSkip$ = shouldCancelSubscription
+        ? this.paymentService.cancelSubscription(this.studentId)
+        : of(undefined);
+
+      cancelOrSkip$
+        .pipe(
+          switchMap(() => this.studentService.update(this.studentId, { active: !student.active })),
+        )
+        .subscribe({
           next: () => {
             this.snackBar.open(`Aluno ${action === 'inativar' ? 'inativado' : 'ativado'} com sucesso`, 'Fechar', {
               duration: 3000,
@@ -413,8 +423,14 @@ export class StudentDetailComponent implements OnInit {
               this.loadStudent();
             }
           },
+          error: (err) => {
+            const message = err?.error?.error?.message ?? (action === 'inativar' ? 'Não foi possível inativar o aluno.' : 'Não foi possível ativar o aluno.');
+            this.snackBar.open(message, 'Fechar', {
+              duration: 5000,
+              panelClass: ['snackbar-error'],
+            });
+          },
         });
-      }
     });
   }
 
