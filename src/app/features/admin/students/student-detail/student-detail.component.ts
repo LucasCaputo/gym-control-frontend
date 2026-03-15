@@ -15,6 +15,7 @@ import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { StudentService } from '../services/student.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { CheckinService } from '../../../checkin/services/checkin.service';
+import { FinancialStatus } from '../../../../shared/models/enums';
 import { Student } from '../../../../shared/models/student.model';
 import { PaymentHistory } from '../../../../shared/models/payment.model';
 import { Checkin } from '../../../../shared/models/checkin.model';
@@ -131,19 +132,22 @@ import { StudentEditDialogComponent } from '../student-edit-dialog/student-edit-
               <mat-icon>check_circle</mat-icon> Ativar
             </button>
           }
-          @if (student()!.planType !== 'SCHOLARSHIP' && student()!.active) {
-            @if (!student()!.asaasSubscriptionId) {
+          @if (showSubscriptionButtons()) {
+            @if (student()!.financialStatus === financialStatusCancelled) {
               <button mat-stroked-button (click)="createSubscription()">
                 <mat-icon>credit_card</mat-icon> Criar Assinatura
               </button>
-            } @else {
+            }
+            @if (showUpdateCard()) {
+              <button mat-stroked-button (click)="updateCard()">
+                <mat-icon>payment</mat-icon> Atualizar Cartão
+              </button>
+            }
+            @if (showCancelSubscription()) {
               <button mat-stroked-button color="warn" (click)="cancelSubscription()">
                 <mat-icon>credit_card_off</mat-icon> Cancelar Assinatura
               </button>
             }
-            <button mat-stroked-button (click)="updateCard()">
-              <mat-icon>payment</mat-icon> Atualizar Cartão
-            </button>
           }
           @if (student()!.planType !== 'SCHOLARSHIP' && paymentsTotal() === 0 && checkinsTotal() === 0) {
             <button mat-stroked-button color="warn" (click)="deleteStudent()">
@@ -331,6 +335,8 @@ export class StudentDetailComponent implements OnInit {
   readonly checkinsPageSize = 20;
   readonly checkinColumns = ['dateTime', 'registeredBy'];
 
+  readonly financialStatusCancelled = FinancialStatus.CANCELLED;
+
   private studentId = '';
 
   ngOnInit(): void {
@@ -342,6 +348,31 @@ export class StudentDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/admin/alunos']);
+  }
+
+  /** Exibe o bloco dos botões de assinatura/cartão apenas para aluno ativo, não bolsista e não isento (conforme REGRAS-BOTOES-DETALHE-ALUNO). */
+  showSubscriptionButtons(): boolean {
+    const s = this.student();
+    if (!s?.active) return false;
+    if (s.planType === 'SCHOLARSHIP') return false;
+    if (s.financialStatus === FinancialStatus.EXEMPT) return false;
+    return true;
+  }
+
+  showUpdateCard(): boolean {
+    const status = this.student()?.financialStatus;
+    return (
+      status === FinancialStatus.ACTIVE ||
+      status === FinancialStatus.PENDING ||
+      status === FinancialStatus.OVERDUE
+    );
+  }
+
+  showCancelSubscription(): boolean {
+    return !!(
+      this.student()?.asaasSubscriptionId &&
+      this.showUpdateCard()
+    );
   }
 
   openEditDialog(): void {
