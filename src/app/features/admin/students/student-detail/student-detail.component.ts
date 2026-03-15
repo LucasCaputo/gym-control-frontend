@@ -131,7 +131,7 @@ import { StudentEditDialogComponent } from '../student-edit-dialog/student-edit-
               <mat-icon>check_circle</mat-icon> Ativar
             </button>
           }
-          @if (student()!.planType !== 'SCHOLARSHIP') {
+          @if (student()!.planType !== 'SCHOLARSHIP' && student()!.active) {
             @if (!student()!.asaasSubscriptionId) {
               <button mat-stroked-button (click)="createSubscription()">
                 <mat-icon>credit_card</mat-icon> Criar Assinatura
@@ -376,7 +376,11 @@ export class StudentDetailComponent implements OnInit {
               duration: 3000,
               panelClass: ['snackbar-success'],
             });
-            this.loadStudent();
+            if (action === 'ativar' && student.planType !== 'SCHOLARSHIP' && !student.asaasSubscriptionId) {
+              this.createSubscription();
+            } else {
+              this.loadStudent();
+            }
           },
         });
       }
