@@ -37,4 +37,10 @@ export class StudentService {
       .post<ApiResponse<RegisterStudentResponse>>(`${environment.apiBaseUrl}/public/register`, data)
       .pipe(map((res) => res.data!));
   }
+
+  delete(id: string): Observable<void> {
+    return this.http
+      .delete(`${environment.apiBaseUrl}/admin/students/${id}`)
+      .pipe(map(() => undefined));
+  }
 }

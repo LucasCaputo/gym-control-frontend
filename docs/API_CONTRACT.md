@@ -279,6 +279,22 @@ Partial update. Only sends fields that changed.
 
 **Response:** Updated student object.
 
+#### DELETE /admin/students/:id
+
+Permanent deletion (hard delete) of a student. Allowed only when:
+- The student is **not** a scholarship holder (`planType !== SCHOLARSHIP`).
+- The student has **no** payment records.
+- The student has **no** check-in records.
+
+**Response (success):** 200 or 204 with no body (or empty data).
+
+**Errors (400 Bad Request):** When any of the above conditions is not met, the API returns a message such as:
+- "Não é possível excluir aluno bolsista"
+- "Aluno possui pagamentos registrados"
+- "Aluno possui presenças registradas"
+
+**Errors:** `NOT_FOUND` if the student does not exist.
+
 ---
 
 ### Check-in (auth required)
@@ -385,6 +401,6 @@ Partial update. Only sends fields that changed.
 4. **Paid flow:** When `planType = PAID`, the response includes `checkoutUrl`. The frontend should redirect the user to this URL after registration.
 5. **Check-in cooldown:** Backend enforces 45-min cooldown. Frontend should display the error message from the API.
 6. **Overdue grace period:** Backend enforces 15-day grace. Frontend should display the error message from the API.
-7. **Soft delete:** Students are never permanently deleted. `active = false` deactivates them. The admin UI should use "Inativar" instead of "Excluir".
+7. **Soft delete:** `active = false` deactivates a student (they no longer appear in CHECKIN search; ADMIN still sees all). The admin UI uses "Inativar" for this. **Hard delete:** `DELETE /admin/students/:id` permanently removes a student only when they are not a scholarship holder and have no payments and no check-ins; otherwise the API returns 400 with a clear message.
 8. **Search behavior differs by role:** CHECKIN gets minimal data; ADMIN gets full student objects.
 9. **Rate limiting:** Public endpoint `/public/register` has rate limiting (10 req / 60s). Frontend should handle `429 TOO_MANY_REQUESTS`.
