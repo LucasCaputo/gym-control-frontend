@@ -131,18 +131,20 @@ import { StudentEditDialogComponent } from '../student-edit-dialog/student-edit-
               <mat-icon>check_circle</mat-icon> Ativar
             </button>
           }
-          @if (!student()!.asaasSubscriptionId) {
-            <button mat-stroked-button (click)="createSubscription()">
-              <mat-icon>credit_card</mat-icon> Criar Assinatura
-            </button>
-          } @else {
-            <button mat-stroked-button color="warn" (click)="cancelSubscription()">
-              <mat-icon>credit_card_off</mat-icon> Cancelar Assinatura
+          @if (student()!.planType !== 'SCHOLARSHIP') {
+            @if (!student()!.asaasSubscriptionId) {
+              <button mat-stroked-button (click)="createSubscription()">
+                <mat-icon>credit_card</mat-icon> Criar Assinatura
+              </button>
+            } @else {
+              <button mat-stroked-button color="warn" (click)="cancelSubscription()">
+                <mat-icon>credit_card_off</mat-icon> Cancelar Assinatura
+              </button>
+            }
+            <button mat-stroked-button (click)="updateCard()">
+              <mat-icon>payment</mat-icon> Atualizar Cartão
             </button>
           }
-          <button mat-stroked-button (click)="updateCard()">
-            <mat-icon>payment</mat-icon> Atualizar Cartão
-          </button>
           @if (student()!.planType !== 'SCHOLARSHIP' && paymentsTotal() === 0 && checkinsTotal() === 0) {
             <button mat-stroked-button color="warn" (click)="deleteStudent()">
               <mat-icon>delete_forever</mat-icon> Excluir definitivamente
