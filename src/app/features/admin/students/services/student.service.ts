@@ -14,11 +14,19 @@ import {
 export class StudentService {
   private readonly http = inject(HttpClient);
 
-  search(q: string, page = 1, limit = 20): Observable<PaginatedResponse<Student>> {
+  search(
+    q: string,
+    page = 1,
+    limit = 20,
+    filters?: { active?: string; planType?: string; financialStatus?: string },
+  ): Observable<PaginatedResponse<Student>> {
     let params = new HttpParams().set('page', page).set('limit', limit);
-    if (q) {
-      params = params.set('q', q);
-    }
+    if (q) params = params.set('q', q);
+    if (filters?.active !== undefined && filters.active !== '')
+      params = params.set('active', filters.active);
+    if (filters?.planType) params = params.set('planType', filters.planType);
+    if (filters?.financialStatus)
+      params = params.set('financialStatus', filters.financialStatus);
     return this.http
       .get<ApiResponse<PaginatedResponse<Student>>>(`${environment.apiBaseUrl}/students/search`, {
         params,
